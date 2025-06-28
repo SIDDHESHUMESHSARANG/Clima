@@ -5,16 +5,16 @@ function App() {
   const [weatherData, setWeatherData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [coordinates, setCoordinates] = useState({ lat: '', lon: '' })
+  const [city, setCity] = useState('')
 
-  const fetchWeather = async (lat = null, lon = null) => {
+  const fetchWeather = async (customCity = null) => {
     setLoading(true)
     setError(null)
     
     try {
-      const url = lat && lon 
-        ? `http://localhost:8000/weather/${lat}/${lon}`
-        : 'http://localhost:8000/weather'
+      const url = customCity 
+        ? `https://clima-gl76.onrender.com/weather/city/${encodeURIComponent(customCity)}`
+        : 'https://clima-gl76.onrender.com/weather'
       
       const response = await fetch(url)
       if (!response.ok) {
@@ -36,8 +36,8 @@ function App() {
 
   const handleCustomLocation = (e) => {
     e.preventDefault()
-    if (coordinates.lat && coordinates.lon) {
-      fetchWeather(coordinates.lat, coordinates.lon)
+    if (city.trim()) {
+      fetchWeather(city.trim())
     }
   }
 
@@ -132,23 +132,14 @@ function App() {
         )}
 
         <div className="custom-location">
-          <h3>📍 Check Weather for Custom Location</h3>
+          <h3>📍 Check Weather for Custom City</h3>
           <form onSubmit={handleCustomLocation}>
             <div className="input-group">
               <input
-                type="number"
-                step="any"
-                placeholder="Latitude"
-                value={coordinates.lat}
-                onChange={(e) => setCoordinates(prev => ({ ...prev, lat: e.target.value }))}
-                required
-              />
-              <input
-                type="number"
-                step="any"
-                placeholder="Longitude"
-                value={coordinates.lon}
-                onChange={(e) => setCoordinates(prev => ({ ...prev, lon: e.target.value }))}
+                type="text"
+                placeholder="Enter city name (e.g., Mumbai, London, New York)"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
                 required
               />
               <button type="submit">Get Weather</button>

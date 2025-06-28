@@ -1,5 +1,7 @@
 # ☀️ Clima
 
+<img src="https://img.shields.io/badge/MIT-green?style=for-the-badge" />
+
 A fullstack weather application that provides real-time weather data and personalized AI-powered suggestions based on current conditions.
 
 ## ✨ Features

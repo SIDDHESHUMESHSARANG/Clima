@@ -1,4 +1,4 @@
-# 🌤️ Clima
+# ☀️ Clima
 
 A fullstack weather application that provides real-time weather data and personalized AI-powered suggestions based on current conditions.
 
@@ -66,7 +66,7 @@ clima/
 
 ## 🚀 Deployment
 
-### This application is deployed at [https://clima.vercel.app]
+### This application is deployed at [https://climaweather.vercel.app]
 
 ## 🤝 Contributing
 

@@ -1,0 +1,7 @@
+geocoder
+fastapi
+pydantic
+pydantic_ai
+groq
+python-dotenv
+uvicorn

@@ -2,11 +2,12 @@ import os
 from dotenv import load_dotenv
 import geocoder
 import requests
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pydantic_ai import Agent
 from groq import Groq
+from typing import Optional
 
 load_dotenv()
 
@@ -83,7 +84,7 @@ weather_agent = Agent(
 )
 
 
-app = FastAPI(title="Weather AI Assistant", version="1.0.0")
+app = FastAPI(title="Clima - Weather & Suggestions ", version="1.0.0")
 
 
 app.add_middleware(
@@ -209,6 +210,43 @@ async def get_weather_by_city(city: str):
             "suggestions": ai_suggestions
         }
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/weather/location")
+async def get_weather_from_browser_location(payload: dict):
+    lat = payload.get("lat")
+    lon = payload.get("lon")
+
+    if lat is None or lon is None:
+        raise HTTPException(status_code=400, detail="Latitude and longitude required")
+
+    try:
+        weather_data = getWeatherData(deps, lat, lon)
+        if not weather_data:
+            raise HTTPException(status_code=500, detail="Could not fetch weather data")
+
+        weather_info = f"Temperature: {weather_data.temperature}°C, Humidity: {weather_data.humidity}%, City: {weather_data.city}"
+        ai_response = await weather_agent.run(weather_info)
+
+        # extract suggestions like in other routes
+        if hasattr(ai_response, 'output'):
+            ai_suggestions = ai_response.output
+        else:
+            response_str = str(ai_response)
+            if 'output=' in response_str:
+                start = response_str.find('output="') + 8
+                end = response_str.rfind('"')
+                ai_suggestions = response_str[start:end] if start > 7 and end > start else response_str
+            else:
+                ai_suggestions = response_str
+
+        return {
+            "location": {"lat": lat, "lon": lon},
+            "weather": weather_data.dict(),
+            "suggestions": ai_suggestions
+        }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

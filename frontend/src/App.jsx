@@ -15,7 +15,7 @@ function App() {
       let url
       if (customCity) {
         // For custom city search
-        url = `${import.meta.env.VITE_CUSTOM_CITY_URL}/${encodeURIComponent(customCity)}`
+        url = `${import.meta.env.VITE_CITY}/${encodeURIComponent(customCity)}`
         const response = await fetch(url)
         if (!response.ok) {
           throw new Error('Failed to fetch weather data')

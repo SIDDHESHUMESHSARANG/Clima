@@ -13,8 +13,8 @@ function App() {
     
     try {
       const url = customCity 
-        ? `https://clima-gl76.onrender.com/weather/city/${encodeURIComponent(customCity)}`
-        : 'https://clima-gl76.onrender.com/weather'
+        ? `${process.env.VITE_CUSTOM_CITY_URL}${encodeURIComponent(customCity)}`
+        : process.env.VITE_WEATHER_URL
       
       const response = await fetch(url)
       if (!response.ok) {

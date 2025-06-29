@@ -12,20 +12,57 @@ function App() {
     setError(null)
     
     try {
-      const url = customCity 
-        ? `https://clima-gl76.onrender.com/weather/city/${encodeURIComponent(customCity)}`
-        : 'https://clima-gl76.onrender.com/weather'
-      
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error('Failed to fetch weather data')
+      let url
+      if (customCity) {
+        // For custom city search
+        url = `${import.meta.env.VITE_CUSTOM_CITY_URL}/${encodeURIComponent(customCity)}`
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error('Failed to fetch weather data')
+        }
+        const data = await response.json()
+        setWeatherData(data)
+      } else {
+        // For geolocation-based weather
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              try {
+                const response = await fetch(`${import.meta.env.VITE_WEATHER}/location`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                  })
+                })
+                
+                if (!response.ok) {
+                  throw new Error('Failed to fetch weather data')
+                }
+                
+                const data = await response.json()
+                setWeatherData(data)
+              } catch (err) {
+                setError(err.message)
+              } finally {
+                setLoading(false)
+              }
+            },
+            (error) => {
+              setError('Unable to get your location. Please try searching for a city.')
+              setLoading(false)
+            }
+          )
+        } else {
+          setError('Geolocation is not supported by this browser.')
+          setLoading(false)
+        }
       }
-      
-      const data = await response.json()
-      setWeatherData(data)
     } catch (err) {
       setError(err.message)
-    } finally {
       setLoading(false)
     }
   }

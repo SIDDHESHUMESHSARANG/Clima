@@ -96,7 +96,7 @@ function App() {
     return (
       <div className="app">
         <div className="loading">
-          <div className="spinner"></div>
+          <img src="/loading.gif" alt="" height="50px" width="50px" />
           <p>Loading weather data...</p>
         </div>
       </div>
@@ -133,6 +133,7 @@ function App() {
             </div>
 
             <div className="weather-info">
+              <img src="/goodweather.gif" alt="" height="500px" width="700px" style={{borderRadius: "20px"}} />
               <div className="temperature">
                 <span className="icon">{getWeatherIcon(weatherData.weather.temperature)}</span>
                 <span className="temp">{weatherData.weather.temperature}°C</span>

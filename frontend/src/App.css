@@ -18,6 +18,7 @@ body {
 
 .app.cold {
   background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+
   ::selection {
     background: #0984e3;
     color: white;
@@ -26,6 +27,7 @@ body {
 
 .app.cool {
   background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+
   ::selection {
     background: #6c5ce7;
     color: white;
@@ -34,6 +36,7 @@ body {
 
 .app.warm {
   background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+
   ::selection {
     background: yellow;
     color: black;
@@ -42,6 +45,7 @@ body {
 
 .app.hot {
   background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+
   ::selection {
     background: red;
     color: white;
@@ -85,34 +89,64 @@ header p {
 }
 
 .location {
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 0;
+  z-index: 2;
+  background: transparent;
+  padding: 15px;
+  border-radius: 15px;
 }
 
 .location h2 {
   font-size: 2rem;
-  color: #2d3436;
+  color: white;
   margin-bottom: 5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .location p {
-  color: #636e72;
+  color: white;
   font-size: 0.9rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .weather-info {
+  position: relative;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 25px;
-  flex-wrap: wrap;
-  gap: 20px;
+  min-height: 500px;
+}
+
+.weather-info img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 }
 
 .temperature {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   gap: 15px;
+  z-index: 2;
+  background: transparent;
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(0px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .temperature .icon {
@@ -122,13 +156,20 @@ header p {
 .temperature .temp {
   font-size: 3.5rem;
   font-weight: bold;
-  color: #2d3436;
+  color: #fff;
 }
 
 .details {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  z-index: 2;
+  background: transparent;
+  padding: 15px;
+  border-radius: 15px;
 }
 
 .detail {
@@ -136,19 +177,23 @@ header p {
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background: rgba(116, 185, 255, 0.1);
+  background: transparent;
   border-radius: 10px;
   min-width: 150px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .detail .label {
   font-weight: 500;
-  color: #636e72;
+  color: #fff;
+  text-shadow: 2px 2px 20px #2d3436;
 }
 
 .detail .value {
   font-weight: bold;
-  color: #2d3436;
+  color: #fff;
+  text-shadow: 2px 2px 20px #2d3436;
 }
 
 .ai-suggestions {
@@ -318,12 +363,46 @@ footer {
   }
 
   .weather-info {
-    flex-direction: column;
-    text-align: center;
+    min-height: 400px;
+  }
+
+  .location {
+    top: 35px;
+    padding: 15px;
+  }
+
+  .location h2 {
+    font-size: 1.5rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .location p {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   }
 
   .temperature {
-    justify-content: center;
+    margin-top: 30px;
+    top: 35%;
+    padding: 10px;
+    backdrop-filter: blur(0px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .temperature .temp {
+    color: #fff;
+  }
+
+  .details {
+    bottom: 20px;
+    right: 20px;
+    padding: 15px;
+    background: transparent;
+  }
+
+  .detail {
+    background: transparent;
   }
 
   .input-group {
@@ -340,11 +419,47 @@ footer {
     padding: 20px;
   }
 
+  .weather-info {
+    min-height: 300px;
+  }
+
+  .location {
+    top: 20px;
+  }
+
+  .location h2 {
+    font-size: 1.3rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .location p {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .temperature {
+    top: 30.5%;
+  }
+
   .temperature .temp {
     font-size: 2.5rem;
+    color: #fff;
   }
 
   .temperature .icon {
     font-size: 2rem;
+  }
+
+  .details {
+    position: absolute;
+    bottom: 20px;
+    right: 0px;
+    background: transparent;
+  }
+
+  .detail {
+    background: transparent;
+    backdrop-filter: blur(2px);
   }
 }

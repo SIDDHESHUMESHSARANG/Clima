@@ -13,8 +13,8 @@ function App() {
     
     try {
       const url = customCity 
-        ? `${process.env.VITE_CUSTOM_CITY_URL}${encodeURIComponent(customCity)}`
-        : process.env.VITE_WEATHER_URL
+        ? `${import.meta.env.VITE_CUSTOM_CITY_URL}${encodeURIComponent(customCity)}`
+        : import.meta.env.VITE_WEATHER_URL
       
       const response = await fetch(url)
       if (!response.ok) {

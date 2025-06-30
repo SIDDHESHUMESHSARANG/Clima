@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { RiAiGenerate2 } from "react-icons/ri";
 import './App.css'
 
 function App() {
@@ -141,7 +140,7 @@ function App() {
               </div>
             </div>
             <div className="ai-suggestions">
-              <h3><RiAiGenerate2 size={20}/> Suggestions</h3>
+              <h3><span id='ai'>✦︎</span> Suggestions</h3>
               <div className="suggestions-content">
                 {weatherData.suggestions.includes('<') ? (
                   <div dangerouslySetInnerHTML={{ __html: weatherData.suggestions }} />

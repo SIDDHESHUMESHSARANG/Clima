@@ -295,6 +295,21 @@ footer {
   }
 }
 
+#ai {
+  background: linear-gradient(135deg, 
+  #0f2027,   /* deep neural blue */
+  #203a43,   /* machine mind slate */
+  #2c5364,   /* algorithmic teal */
+  #8e44ad,   /* generative violet */
+  #f39c12    /* creative spark gold */
+);
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
 @media (max-width: 600px) {
 
   .weather-card.row-layout .weather-info,

@@ -1,13 +1,12 @@
 import os
 from dotenv import load_dotenv
-import geocoder
 import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pydantic_ai import Agent
 from groq import Groq
-from typing import Optional
+from typing import Optional, List
 
 load_dotenv()
 
@@ -15,42 +14,48 @@ class WeatherData(BaseModel) :
     temperature: float
     humidity: int
     city: str
+    description: str
+    icon: str
+
+class ForecastDay(BaseModel):
+    date: str
+    temperature: float
+    description: str
+    icon: str
 
 class Deps :
     def __init__(self) :
         self.weather_api_key = os.environ["WEATHER_API_KEY"]
         self.groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
-def getUserLocation() :
-    g = geocoder.ip('me')
-    if g.ok :
-        return {"lat": g.latlng[0], "lon": g.latlng[1], "city": g.city or "Unknown"}
-    return None
-
 def getWeatherData(deps: Deps, lat: float, lon: float) :
     url = f"http://api.weatherapi.com/v1/current.json?key={deps.weather_api_key}&q={lat},{lon}&aqi=no"
     
     try:
         response = requests.get(url)
+        
+        if response.status_code != 200:
+            return None
+            
         response.raise_for_status()  
         
         data = response.json()
         
-        
         current = data['current']
         location = data['location']
+        condition = current['condition']
         
         return WeatherData(
-            temperature=current['temp_c'],  
-            humidity=current['humidity'],   
-            city=location['name']          
+            temperature=current['temp_c'],
+            humidity=current['humidity'],
+            city=location['name'],
+            description=condition['text'],
+            icon=condition['icon']
         )
         
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching weather data: {e}")
         return None
     except KeyError as e:
-        print(f"Error parsing weather data: {e}")
         return None
 
 def getWeatherDataByCity(deps: Deps, city: str) :
@@ -61,21 +66,21 @@ def getWeatherDataByCity(deps: Deps, city: str) :
         response.raise_for_status()  
         
         data = response.json()
-        
         current = data['current']
         location = data['location']
+        condition = current['condition']
         
         return WeatherData(
-            temperature=current['temp_c'],  
-            humidity=current['humidity'],   
-            city=location['name']          
+            temperature=current['temp_c'],
+            humidity=current['humidity'],
+            city=location['name'],
+            description=condition['text'],
+            icon=condition['icon']
         )
         
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching weather data: {e}")
         return None
     except KeyError as e:
-        print(f"Error parsing weather data: {e}")
         return None
 
 weather_agent = Agent(
@@ -103,19 +108,15 @@ async def root():
     return {"message": "Clima"}
 
 @app.get("/weather")
-async def get_weather():
+async def get_weather(lat: Optional[float] = None, lon: Optional[float] = None):
     """Get current weather data and AI suggestions"""
     try:
+        if lat is None or lon is None:
+            raise HTTPException(status_code=400, detail="Latitude and longitude are required")
         
-        location = getUserLocation()
-        if not location:
-            raise HTTPException(status_code=500, detail="Could not determine location")
-        
-        
-        weather_data = getWeatherData(deps, location["lat"], location["lon"])
+        weather_data = getWeatherData(deps, lat, lon)
         if not weather_data:
             raise HTTPException(status_code=500, detail="Could not fetch weather data")
-        
         
         weather_info = f"Temperature: {weather_data.temperature}°C, Humidity: {weather_data.humidity}%, City: {weather_data.city}"
         ai_response = await weather_agent.run(weather_info)
@@ -135,7 +136,7 @@ async def get_weather():
                 ai_suggestions = response_str
         
         return {
-            "location": location,
+            "location": {"lat": lat, "lon": lon, "city": weather_data.city},
             "weather": weather_data.dict(),
             "suggestions": ai_suggestions
         }
@@ -247,6 +248,33 @@ async def get_weather_from_browser_location(payload: dict):
             "suggestions": ai_suggestions
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/forecast")
+async def get_forecast(lat: Optional[float] = None, lon: Optional[float] = None, city: Optional[str] = None):
+    """Get 7-day weather forecast from weatherapi.com"""
+    try:
+        if city:
+            q = city
+        elif lat is not None and lon is not None:
+            q = f"{lat},{lon}"
+        else:
+            raise HTTPException(status_code=400, detail="Latitude/longitude or city required")
+        url = f"http://api.weatherapi.com/v1/forecast.json?key={deps.weather_api_key}&q={q}&days=7&aqi=no&alerts=no"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        forecast_days = data['forecast']['forecastday']
+        forecast = []
+        for day in forecast_days:
+            forecast.append(ForecastDay(
+                date=day['date'],
+                temperature=day['day']['avgtemp_c'],
+                description=day['day']['condition']['text'],
+                icon=day['day']['condition']['icon']
+            ))
+        return {"forecast": [f.dict() for f in forecast]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

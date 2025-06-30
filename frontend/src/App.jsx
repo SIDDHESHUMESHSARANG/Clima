@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { RiAiGenerate2 } from "react-icons/ri";
 import './App.css'
 
 function App() {
@@ -10,39 +11,26 @@ function App() {
   const fetchWeather = async (customCity = null) => {
     setLoading(true)
     setError(null)
-    
     try {
       let url
       if (customCity) {
-        // For custom city search
         url = `${import.meta.env.VITE_CITY}/${encodeURIComponent(customCity)}`
         const response = await fetch(url)
-        if (!response.ok) {
-          throw new Error('Failed to fetch weather data')
-        }
+        if (!response.ok) throw new Error('Failed to fetch weather data')
         const data = await response.json()
         setWeatherData(data)
       } else {
-        // For geolocation-based weather
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               try {
-                const response = await fetch(`${import.meta.env.VITE_WEATHER}/location`, {
+                url = `${import.meta.env.VITE_WEATHER}/location`
+                const response = await fetch(url, {
                   method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude
-                  })
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ lat: position.coords.latitude, lon: position.coords.longitude })
                 })
-                
-                if (!response.ok) {
-                  throw new Error('Failed to fetch weather data')
-                }
-                
+                if (!response.ok) throw new Error('Failed to fetch weather data')
                 const data = await response.json()
                 setWeatherData(data)
               } catch (err) {
@@ -78,11 +66,18 @@ function App() {
     }
   }
 
-  const getWeatherIcon = (temp) => {
-    if (temp < 10) return '❄️'
-    if (temp < 20) return '🌤️'
-    if (temp < 30) return '☀️'
-    return '🔥'
+  const getWeatherIcon = (description) => {
+    if (!description) return '🌤️' // Fallback if description is undefined
+    const desc = description.toLowerCase()
+    if (desc.includes('rain') || desc.includes('drizzle')) return '🌧️'
+    if (desc.includes('snow')) return '❄️'
+    if (desc.includes('cloud') || desc.includes('overcast')) return '☁️'
+    if (desc.includes('mist') || desc.includes('fog') || desc.includes('haze')) return '🌫️'
+    if (desc.includes('thunder') || desc.includes('storm')) return '⛈️'
+    if (desc.includes('clear')) return '☀️'
+    if (desc.includes('partly')) return '⛅'
+    if (desc.includes('scattered')) return '🌤️'
+    return '🌤️'
   }
 
   const getBackgroundClass = (temp) => {
@@ -118,76 +113,55 @@ function App() {
   return (
     <div className={`app ${weatherData?.weather ? getBackgroundClass(weatherData.weather.temperature) : ''}`}>
       <div className="container">
-        <header>
-          <h1>🌤️ Clima</h1>
-          <p>Get personalized weather insights powered by AI</p>
-        </header>
-
         {weatherData && (
-          <div className="weather-card">
-            <div className="location">
-              <h2>{weatherData.weather?.city || weatherData.location?.city}</h2>
-              {weatherData.location && (
-                <p>📍 {weatherData.location.lat.toFixed(4)}, {weatherData.location.lon.toFixed(4)}</p>
-              )}
-            </div>
-
+          <div className="weather-card row-layout">
             <div className="weather-info">
-              <img src="/goodweather.gif" alt="" height="500px" width="700px" style={{borderRadius: "20px"}} />
-              <div className="temperature">
-                <span className="icon">{getWeatherIcon(weatherData.weather.temperature)}</span>
-                <span className="temp">{weatherData.weather.temperature}°C</span>
-              </div>
-              
-              <div className="details">
-                <div className="detail">
-                  <span className="label">Humidity</span>
-                  <span className="value">💧 {weatherData.weather.humidity}%</span>
+              <div>
+                <div className="location-temp">
+                  <div className="location">
+                    <h2>{weatherData.weather?.city || weatherData.location?.city}</h2>
+                    {weatherData.location && (
+                      <p>📍{weatherData.location.lat.toFixed(4)}, {weatherData.location.lon.toFixed(4)}</p>
+                    )}
+                  </div>
+                  <div className="temperature">
+                    <span className="icon">{getWeatherIcon(weatherData.weather.description)}</span>
+                    <span className="temp">{weatherData.weather.temperature}°C</span>
+                    <div className="weather-description">
+                      {weatherData.weather.description || 'Weather'}
+                    </div>
+                  </div>
+                </div>
+                <div className="details">
+                  <div className="detail">
+                    <span className="label">Humidity</span>
+                    <span className="value">💧 {weatherData.weather.humidity}%</span>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {weatherData.suggestions && (
-              <div className="ai-suggestions">
-                <h3>Suggestions</h3>
-                <div className="suggestions-content">
-                  {weatherData.suggestions.includes('<') ? (
-                    <div dangerouslySetInnerHTML={{ __html: weatherData.suggestions }} />
-                  ) : (
-                    <ul style={{listStyle: 'none'}}>
-                      {weatherData.suggestions
-                        .split('\n')
-                        .filter(line => line.trim())
-                        .map((suggestion, index) => (
-                          <li key={index}>{suggestion.trim()}</li>
-                        ))}
-                    </ul>
-                  )}
-                </div>
+            <div className="ai-suggestions">
+              <h3><RiAiGenerate2 size={20}/> Suggestions</h3>
+              <div className="suggestions-content">
+                {weatherData.suggestions.includes('<') ? (
+                  <div dangerouslySetInnerHTML={{ __html: weatherData.suggestions }} />
+                ) : (
+                  <ul style={{listStyle: 'none'}}>
+                    {weatherData.suggestions
+                      .split('\n')
+                      .filter(line => line.trim())
+                      .map((suggestion, index) => (
+                        <li key={index}>{suggestion.trim()}</li>
+                      ))}
+                  </ul>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
-
-        <div className="custom-location">
-          <h3>📍 Check Weather for Custom City</h3>
-          <form onSubmit={handleCustomLocation}>
-            <div className="input-group">
-              <input
-                type="text"
-                placeholder="Enter city name (e.g., Mumbai, London, New York)"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                required
-              />
-              <button type="submit">Get Weather</button>
-            </div>
-          </form>
-        </div>
-
         <footer>
           <button onClick={() => fetchWeather()} className="refresh-btn">
-            🔄 Refresh Current Location
+          ⟳ Refresh Current Location
           </button>
         </footer>
       </div>
